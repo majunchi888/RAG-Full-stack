@@ -7,13 +7,13 @@ uv venv
 后端测试：
 cd rag_agent
 
-# uvicorn main:app --reload --port 8080 打开 http://localhost:8080/docs 进行测试
+uvicorn main:app --reload --port 8080 打开 http://localhost:8080/docs 进行测试
 
-# curl.exe -X POST "http://127.0.0.1:8000/upload" -F "files=@CET6.pdf"
+curl.exe -X POST "http://127.0.0.1:8000/upload" -F "files=@CET6.pdf"
 
-# curl.exe -X POST "http://127.0.0.1:8080/upload" -F "files=@研究生个人简历.docx"
+curl.exe -X POST "http://127.0.0.1:8080/upload" -F "files=@研究生个人简历.docx"
 
-# curl.exe -X POST "http://127.0.0.1:8080/chat" -H "Content-Type: application/json" -d '{\"question\":\"马俊驰的成绩？\"}'
+curl.exe -X POST "http://127.0.0.1:8080/chat" -H "Content-Type: application/json" -d '{\"question\":\"马俊驰的成绩？\"}'
 
 运行！！
 
