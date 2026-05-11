@@ -1,0 +1,38 @@
+# Python
+
+**pycache**/
+_.pyc
+_.pyo
+\*.pyd
+
+# Virtual env
+
+.venv/
+env/
+venv/
+
+# Chroma DB
+
+chroma_db/
+rag_agent/chroma_db/
+
+# FastAPI temp files
+
+\*.log
+
+# Environment variables
+
+.env
+
+# Node / Frontend
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS / Editor
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
