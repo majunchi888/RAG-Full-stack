@@ -3,7 +3,7 @@ uvicorn
 pydantic
 python-dotenv
 
-# LangChain 
+
 langchain
 langchain-core
 langchain-community
@@ -11,14 +11,14 @@ langchain-openai
 langchain-chroma
 langgraph
 
-# Embeddings (aliyun DashScope)
+
 dashscope
 
-# 
-docx2txt       # Word 
-PyPDF2         # PDF 
+
+docx2txt       
+PyPDF2        
 pypdf
 python-multipart
 
-# 向量数据库
+
 chromadb

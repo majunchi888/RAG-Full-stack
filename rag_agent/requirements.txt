@@ -20,5 +20,5 @@ PyPDF2         # PDF
 pypdf
 python-multipart
 
-# 向量数据库
+# 
 chromadb

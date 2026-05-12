@@ -1,5 +1,5 @@
 from langchain.tools import tool
-from retriever import retriever, deduplicate_docs
+from rag_agent.retriever import retriever, deduplicate_docs
 
 @tool("retrieve_knowledge")
 def retrieve_knowledge(query: str) -> dict:

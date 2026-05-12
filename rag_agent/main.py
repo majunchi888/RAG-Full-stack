@@ -2,11 +2,11 @@ from fastapi import FastAPI, UploadFile, File, Query
 from typing import List
 import os
 
-from pydantic_model import ChatRequest, UploadResponse
-from agent import agent_executor
-from retriever import retriever, deduplicate_docs
-from loaders import load_file
-from vectorstore import vectorstore
+from rag_agent.pydantic_model import ChatRequest, UploadResponse
+from rag_agent.agent import agent_executor
+from rag_agent.retriever import retriever, deduplicate_docs
+from rag_agent.loaders import load_file
+from rag_agent.vectorstore import vectorstore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 app = FastAPI(title="Agentic RAG - Chroma + 阿里云百炼")
@@ -24,10 +24,18 @@ async def chat(request: ChatRequest):
     docs = retriever.invoke(request.question)
     unique_docs = deduplicate_docs(docs)
 
+    sources = [
+        {
+            "source": doc.metadata.get("source"),
+            "page": doc.metadata.get("page"),
+        }
+        for doc in unique_docs
+    ]
+
     return {
         "question": request.question,
         "answer": final_answer,
-    
+        "sources": sources
     }
 
 @app.post("/upload", response_model=UploadResponse)
@@ -68,7 +76,7 @@ async def delete_document(source: str = Query(..., description="文档来源文�
     删除指定文档（根据 source 字段）
     """
     try:
-        vectorstore.delete(where={"source": source})
+        vectorstore.delete(where={"source": source}) #where 是向量数据库（VectorStore）提供的过滤删除条件，按元数据（metadata）进行精准删除
         return {"message": f"文档 {source} 已删除"}
     except Exception as e:
         return {"error": str(e)}    

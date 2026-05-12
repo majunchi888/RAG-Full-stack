@@ -23,6 +23,7 @@ rag_agent/chroma_db/
 # Environment variables
 
 .env
+rag_agent/.env
 
 # Node / Frontend
 

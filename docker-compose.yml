@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: . # 使用根目录作为构建上下文
+      dockerfile: Dockerfile.backend
+    container_name: rag_agent-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ./chroma_db:/app/chroma_db # 持久化向量数据库（重要）
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: rag_agent-frontend
+    ports:
+      - "5173:80"
+    restart: unless-stopped

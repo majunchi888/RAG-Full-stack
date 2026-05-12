@@ -1,6 +1,6 @@
 from langchain_chroma import Chroma
 from langchain_community.embeddings import DashScopeEmbeddings
-from config import ALIYUN_API_KEY, PERSIST_DIRECTORY
+from rag_agent.config import ALIYUN_API_KEY, PERSIST_DIRECTORY
 
 embeddings = DashScopeEmbeddings(
     model="text-embedding-v3",

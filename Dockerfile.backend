@@ -1,0 +1,23 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# 加速 + 升级 pip
+RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/ \
+    && pip install --no-cache-dir --upgrade pip
+
+# 复制依赖文件并安装
+COPY requirements.txt .
+RUN pip install --no-cache-dir --default-timeout=200 -r requirements.txt
+
+# 复制项目代码（根目录所有文件）
+COPY . .
+
+# 创建必要的目录
+RUN mkdir -p /app/uploads /app/chroma_db \
+    && chmod -R 777 /app/uploads /app/chroma_db
+
+EXPOSE 8080
+
+# 启动命令
+CMD ["uvicorn", "rag_agent.main:app", "--host", "0.0.0.0", "--port", "8080", "--log-level", "info"]
