@@ -19,22 +19,15 @@ Docker 一键部署
 ## 项目结构
 
 RAG-Full-stack/
-│── rag_agent/ # FastAPI 后端
+│── backend/ # FastAPI 后端
 │── frontend/ # React 前端
 │── chroma_db/ # 向量库持久化
-│── Dockerfile.backend
 │── Dockerfile.frontend
 │── docker-compose.yml
 │── requirements.txt
 
-uv init
-
-uv venv
-
-.venv\Scripts\activate
-
 后端测试：
-cd rag_agent
+cd rag_agent/backend
 
 uvicorn rag_agent.main:app --reload --port 8080 打开 http://localhost:8080/docs 进行测试
 
@@ -46,12 +39,14 @@ curl.exe -X POST "http://127.0.0.1:8080/chat" -H "Content-Type: application/json
 
 运行！！
 
-# 1. 启动后端（确保已经在 8000 端口运行）
+# 终端启动
 
-cd d:/rag_agent
+## 1. 启动后端（确保已经在 8000 端口运行）
+
+cd d:/rag_agent/backend
 uvicorn rag_agent.main:app --reload
 
-# 2. 另一个终端启动前端
+## 2. 另一个终端启动前端
 
 cd d:/rag*agent/frontend
 npm run dev
@@ -63,3 +58,8 @@ npm run dev
 知识问答 底部输入框，Enter 发送，聊天气泡展示
 思考动画 加载时显示跳跃的「...」动画
 来源展示 如果后端返回 sources 字段，会在回答下方用卡片形式显示
+
+### Docker一键部署
+
+终端：docker-compose up -d 启动服务
+通过浏览器访问 http://localhost:5173 即可打开网址

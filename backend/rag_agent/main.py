@@ -14,10 +14,10 @@ app = FastAPI(title="Agentic RAG - Chroma + 阿里云百炼")
 @app.post("/chat")
 async def chat(request: ChatRequest):
     config = {"configurable": {"thread_id": request.thread_id}}
+
     result = agent_executor.invoke(
         {"messages": [("human", request.question)]},
-        config,
-        verbose=True
+        config=config
     )
     final_answer = result["messages"][-1].content
 

@@ -1,35 +1,122 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { uploadFiles, sendChat, deleteDocument } from './api'
 import UploadZone from './components/UploadZone'
 import ChatMessage from './components/ChatMessage'
 import ChatInput from './components/ChatInput'
 import DocumentPanel from './components/DocumentPanel'
+import ThreadList from './components/ThreadList'
 
-function loadDocuments() {
+function loadJSON(key) {
   try {
-    const saved = localStorage.getItem('rag_documents')
-    return saved ? JSON.parse(saved) : []
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : null
   } catch {
-    return []
+    return null
   }
 }
 
+function saveJSON(key, value) {
+  localStorage.setItem(key, JSON.stringify(value))
+}
+
+function initThreadId() {
+  const existing = localStorage.getItem('currentThreadId')
+  if (existing) return existing
+  const id = crypto.randomUUID()
+  localStorage.setItem('currentThreadId', id)
+  return id
+}
+
+const initialThreadId = initThreadId()
+
+function loadThreads() {
+  return loadJSON('rag_threads') || []
+}
+
+function saveThreads(threads) {
+  saveJSON('rag_threads', threads)
+}
+
+function loadMessages(threadId) {
+  return loadJSON(`rag_msg_${threadId}`) || []
+}
+
+function saveMessages(threadId, messages) {
+  saveJSON(`rag_msg_${threadId}`, messages)
+}
+
+function loadDocuments() {
+  return loadJSON('rag_documents') || []
+}
+
 function saveDocuments(docs) {
-  localStorage.setItem('rag_documents', JSON.stringify(docs))
+  saveJSON('rag_documents', docs)
 }
 
 export default function App() {
-  const [messages, setMessages] = useState([])
+  const [currentThreadId, setCurrentThreadId] = useState(initialThreadId)
+  const [threads, setThreads] = useState(loadThreads)
+  const [messages, setMessages] = useState(() => loadMessages(initialThreadId))
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadMsg, setUploadMsg] = useState(null)
   const [documents, setDocuments] = useState(loadDocuments)
-  const [deleting, setDeleting] = useState(null) // 正在删除的文档名
+  const [deleting, setDeleting] = useState(null)
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // Persist messages whenever they change for the current thread
+  useEffect(() => {
+    saveMessages(currentThreadId, messages)
+  }, [messages, currentThreadId])
+
+  const handleNewThread = useCallback(() => {
+    const id = crypto.randomUUID()
+    localStorage.setItem('currentThreadId', id)
+    setCurrentThreadId(id)
+    setThreads((prev) => {
+      const updated = [{ id, createdAt: Date.now() }, ...prev]
+      saveThreads(updated)
+      return updated
+    })
+    setMessages([])
+  }, [])
+
+  const handleSelectThread = useCallback((id) => {
+    localStorage.setItem('currentThreadId', id)
+    setCurrentThreadId(id)
+    setMessages(loadMessages(id))
+  }, [])
+
+  const handleDeleteThread = useCallback((id) => {
+    localStorage.removeItem(`rag_msg_${id}`)
+
+    setThreads((prev) => {
+      const updated = prev.filter((t) => t.id !== id)
+      saveThreads(updated)
+
+      if (id === currentThreadId) {
+        if (updated.length > 0) {
+          const next = updated[0]
+          localStorage.setItem('currentThreadId', next.id)
+          setCurrentThreadId(next.id)
+          setMessages(loadMessages(next.id))
+        } else {
+          const newId = crypto.randomUUID()
+          localStorage.setItem('currentThreadId', newId)
+          setCurrentThreadId(newId)
+          setMessages([])
+          const fresh = [{ id: newId, createdAt: Date.now() }]
+          saveThreads(fresh)
+          return fresh
+        }
+      }
+      return updated
+    })
+  }, [currentThreadId])
 
   const handleUpload = async (files) => {
     setUploading(true)
@@ -67,8 +154,24 @@ export default function App() {
   const handleSend = async (question) => {
     setMessages((prev) => [...prev, { role: 'user', content: question }])
     setLoading(true)
+
+    // Set thread title from first user message
+    setThreads((prev) => {
+      const thread = prev.find((t) => t.id === currentThreadId)
+      if (thread && !thread.title) {
+        const updated = prev.map((t) =>
+          t.id === currentThreadId
+            ? { ...t, title: question.slice(0, 30) + (question.length > 30 ? '...' : '') }
+            : t,
+        )
+        saveThreads(updated)
+        return updated
+      }
+      return prev
+    })
+
     try {
-      const data = await sendChat(question)
+      const data = await sendChat(question, currentThreadId)
       setMessages((prev) => [
         ...prev,
         {
@@ -120,6 +223,15 @@ export default function App() {
 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">
+        {/* Thread sidebar */}
+        <ThreadList
+          threads={threads}
+          currentThreadId={currentThreadId}
+          onNewThread={handleNewThread}
+          onSelectThread={handleSelectThread}
+          onDeleteThread={handleDeleteThread}
+        />
+
         {/* Chat area */}
         <div className="flex flex-col flex-1 min-w-0">
           <div className="flex-1 overflow-y-auto px-4 py-6">

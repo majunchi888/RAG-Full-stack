@@ -46,7 +46,7 @@ export async function deleteDocument(source) {
   return data
 }
 
-export async function sendChat(question, threadId = "default_thread") {
+export async function sendChat(question, threadId) {
   const res = await fetchWithTimeout(
     `${API_BASE}/chat`,
     {
