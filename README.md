@@ -1,6 +1,8 @@
 📘 RAG Full Stack
 一个基于 FastAPI + LangChain + ChromaDB + React 的全栈 RAG 系统，支持文档上传、向量检索、Agent 推理与引用返回。
 
+![alt text](image.png)
+
 🚀 功能特性
 文档上传（PDF / DOCX）
 
