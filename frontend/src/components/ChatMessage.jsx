@@ -38,9 +38,18 @@ export default function ChatMessage({ message }) {
               来源引用
               <span className="w-3 h-0.5 bg-gray-300 rounded-full" />
             </p>
-            {message.sources.map((src, i) => (
-              <SourceCard key={i} source={src} />
-            ))}
+            {(() => {
+              const seen = new Set()
+              const unique = message.sources.filter((src) => {
+                const key = `${src.source || ''}||${src.page ?? ''}`
+                if (seen.has(key)) return false
+                seen.add(key)
+                return true
+              })
+              return unique.map((src, i) => (
+                <SourceCard key={i} source={src} />
+              ))
+            })()}
           </div>
         )}
       </div>

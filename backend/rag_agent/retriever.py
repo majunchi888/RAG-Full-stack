@@ -13,7 +13,7 @@ def deduplicate_docs(docs):
     seen = set()
     unique_docs = []
     for d in docs:
-        key = (d.metadata.get("source"), d.metadata.get("page"))
+        key = (d.metadata.get("source"), d.metadata.get("page"), d.page_content[:400])
         if key not in seen:
             seen.add(key)
             unique_docs.append(d)

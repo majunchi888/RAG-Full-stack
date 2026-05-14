@@ -63,5 +63,6 @@ npm run dev
 
 ### Docker一键部署
 
+打开 Docker Desktop
 终端：docker-compose up -d 启动服务
 通过浏览器访问 http://localhost:5173 即可打开网址

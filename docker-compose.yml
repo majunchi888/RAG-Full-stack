@@ -8,8 +8,6 @@ services:
       dockerfile: Dockerfile.backend
     ports:
       - "8080:8080"
-    volumes:
-      - ./chroma_db:/app/chroma_db
     restart: always
 
   frontend:
