@@ -31,6 +31,10 @@ RAG-Full-stack/
 后端测试：
 cd rag_agent/backend
 
+curl.exe -X POST `
+"http://127.0.0.1:8000/upload"`
+-F "files=@D:\agent-project\rag_agent\电子信息马俊驰.pdf"
+
 uvicorn rag_agent.main:app --reload --port 8080 打开 http://localhost:8080/docs 进行测试
 
 curl.exe -X POST "http://127.0.0.1:8000/upload" -F "files=@CET6.pdf"
@@ -45,14 +49,13 @@ curl.exe -X POST "http://127.0.0.1:8080/chat" -H "Content-Type: application/json
 
 ## 1. 启动后端（确保已经在 8000 端口运行）
 
-cd d:/rag_agent/backend
-uvicorn rag_agent.main:app --reload
+uv run uvicorn backend.rag_agent.main:app --reload
 
 ## 2. 另一个终端启动前端
 
 cd d:/rag*agent/frontend
 npm run dev
-访问 http://localhost:5173 即可使用。Vite 代理会自动将 /api/* 请求转发到后端的 http://localhost:8000/\_，无需额外配置 CORS。
+访问 http://localhost:5173 即可使用。Vite 代理会自动将 /api/* 请求转发到后端的 http://localhost:8000/，无需额外配置 CORS。
 
 功能说明
 功能 说明

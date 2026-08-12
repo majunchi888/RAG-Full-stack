@@ -1,6 +1,6 @@
 from langchain.agents import create_agent
-from rag_agent.llm import llm
-from rag_agent.tools import tools
+from backend.rag_agent.tools import tools
+from backend.rag_agent.llm import llm
 from langgraph.checkpoint.memory import InMemorySaver
 
 system_prompt = """

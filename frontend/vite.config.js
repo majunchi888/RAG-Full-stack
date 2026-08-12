@@ -8,7 +8,7 @@ export default defineConfig({
     host: "0.0.0.0",
     proxy: {
       "/api": {
-        target: "http://localhost:8080", // ← 改成 localhost（浏览器能访问）
+        target: "http://localhost:8000", // ← 改成 localhost（浏览器能访问）
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
