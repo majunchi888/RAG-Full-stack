@@ -39,6 +39,7 @@ Thumbs.db
 .idea/
 
 # 大文件索引 / 向量
+backend/rag_agent/indexes/
 *.npy
 *.bin
 *.faiss
