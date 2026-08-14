@@ -8,14 +8,12 @@ python-dotenv>=1.0.1
 
 
 # ======================
-# LangChain
+# LangChain / LLM
 # ======================
 langchain>=0.3.20
 langchain-core>=0.3.40
 langchain-community>=0.3.20
 langchain-openai>=0.3.7
-langchain-chroma>=0.2.2
-
 langgraph>=0.2.60
 
 
@@ -35,40 +33,34 @@ python-multipart>=0.0.20
 
 
 # ======================
-# Retrieval evaluation
+# Retrieval / rerank
 # ======================
 bm25s>=0.2.10
-
 cohere>=5.13.0
-
-datasets>=3.3.0
-
 numpy==2.2.4
-pandas>=2.2.3
-pyarrow>=19.0.0
-
 tiktoken>=0.9.0
 
-tqdm>=4.67.1
-
 
 # ======================
-# Embedding / Reranker
+# Embedding / reranker models
 # ======================
 transformers>=4.50.0
-
 sentence-transformers>=3.4.1
-
-
-# ⚠️ Python 3.13 注意
 FlagEmbedding>=1.3.5
 
 
 # ======================
-# Vector DB
+# Database / vector storage
 # ======================
-chromadb>=1.0.0
-psycopg2-binary
 pgvector
 sqlalchemy
-# postgresql://postgres:[YOUR-PASSWORD]@db.shqbtirkdigirwitzxjv.supabase.co:5432/postgres
+
+
+# ======================
+# Audio / video processing
+# ======================
+pydub
+audioop-lts
+yt_dlp
+funasr
+torchaudio

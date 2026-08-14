@@ -3,7 +3,7 @@ from pydoc import Doc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import NullPool
-from backend.rag_agent.models import ConversationDocument, UserDocument, Document, embedding_model
+from backend.rag_agent.models import ConversationDocument, UserDocument, Document, UserMemory, get_embedding_model
 
 import os 
 from dotenv import load_dotenv
@@ -39,8 +39,10 @@ def insert_chunks(splits, doc_id, conversation_id):
 
     try:
         texts = [doc.page_content for doc in splits]
+
+        model = get_embedding_model()
     
-        embeddings = embedding_model.encode(texts, normalize_embeddings=True)
+        embeddings = model.encode(texts, normalize_embeddings=True)
 
 
         # 1. 插入所有 chunks
@@ -89,3 +91,4 @@ def get_db():
         yield db
     finally:
         db.close()
+

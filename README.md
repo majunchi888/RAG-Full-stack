@@ -51,6 +51,9 @@ curl.exe -X POST "http://127.0.0.1:8080/chat" -H "Content-Type: application/json
 
 uv run uvicorn backend.rag_agent.main:app --reload
 
+curl.exe -X POST "http://127.0.0.1:8000/conversations/3/sources" `   -H "accept: application/json"`
+-F "url=https://www.bilibili.com/video/BV1fHgi6FEQY/?spm_id_from=333.337.search-card.all.click&vd_source=dc4ae7fd5b03ce1c55025d1b61a670f2"
+
 ## 2. 另一个终端启动前端
 
 cd d:/rag*agent/frontend

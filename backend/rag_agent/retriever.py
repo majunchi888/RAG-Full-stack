@@ -1,7 +1,7 @@
 from collections import defaultdict
 from backend.rag_agent.database import SessionLocal, get_db
 from sqlalchemy import sql, text
-from backend.rag_agent.models import ConversationDocument, embedding_model, Document
+from backend.rag_agent.models import ConversationDocument, get_embedding_model, Document
 import numpy as np
 import bm25s
 import os
@@ -18,7 +18,6 @@ class HybridRetriever:
         self,
         db,
         conversation_id: str,
-        doc_id: list[str] | None = None,
         rerank_model: str = "rerank-multilingual-v3.0",  # 你的 Cohere 模型名
         cohere_client=co,
     ):
@@ -54,12 +53,18 @@ class HybridRetriever:
         print("实际加载的 doc_id 列表:", [d.doc_id for d in documents])
 
         # ---------- BM25 ----------
+        # ========== 新增空值保护 ==========
+        if not self.documents:
+            print(f"警告: conversation_id={conversation_id} 没有找到任何 chunks")
+            self.bm25 = None
+            # 其他需要初始化的属性也设为安全值
+            return     
         corpus_tokens = bm25s.tokenize(self.documents, stopwords="zh")
         self.bm25 = bm25s.BM25()
         self.bm25.index(corpus_tokens)
 
         # ---------- Dense ----------
-        self.model = embedding_model
+        self.model = get_embedding_model()
         embeddings = self.model.encode(self.documents, normalize_embeddings=True)
         # self.embeddings = np.array(embeddings, dtype=np.float32)
         
@@ -70,7 +75,8 @@ class HybridRetriever:
      
 
     def _bm25_search(self, query: str, k: int):
-        
+        if not self.documents or self.bm25 is None:
+            return []    
         k = min(k, len(self.documents))
         query_tokens = bm25s.tokenize([query], stopwords="zh")
         indices, scores = self.bm25.retrieve(query_tokens, k=k)
@@ -146,6 +152,8 @@ class HybridRetriever:
         corpus_size = len(self.documents)
         k = min(k, corpus_size)
         candidate_k = min(candidate_k, corpus_size)
+        if not self.documents:
+            return [] 
 
         # 1. 双路召回
         bm25_ids = [doc_id for doc_id, _ in self._bm25_search(query, candidate_k)]

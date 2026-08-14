@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
-    question: str
-    thread_id: str 
+    conversation_id: int
+    query: str
 
 class UploadResponse(BaseModel):
     message: str
