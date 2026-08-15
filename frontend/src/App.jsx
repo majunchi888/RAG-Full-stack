@@ -58,6 +58,7 @@ export default function App() {
 
   // UI state
   const [loading, setLoading] = useState(false)
+  const [creatingConversation, setCreatingConversation] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadMsg, setUploadMsg] = useState(null)
   const [showUploadDialog, setShowUploadDialog] = useState(false)
@@ -100,7 +101,10 @@ export default function App() {
 
   // Create new conversation
   const handleNewConversation = useCallback(async () => {
+    if (creatingConversation) return
+
     try {
+      setCreatingConversation(true)
       setError(null)
       const data = await createConversation()
 
@@ -116,8 +120,10 @@ export default function App() {
       setSources([])
     } catch (e) {
       setError(`创建对话失败: ${e.message}`)
+    } finally {
+      setCreatingConversation(false)
     }
-  }, [])
+  }, [creatingConversation])
 
   // Select conversation
   const handleSelectConversation = useCallback((id) => {
@@ -338,6 +344,7 @@ export default function App() {
           onNewConversation={handleNewConversation}
           onSelectConversation={handleSelectConversation}
           onDeleteConversation={handleDeleteConversation}
+          creatingConversation={creatingConversation}
         />
 
         {/* Middle: Chat Window */}

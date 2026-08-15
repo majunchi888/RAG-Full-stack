@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Annotated
 import os
 from sqlalchemy.orm import Session
-from backend.rag_agent.audio import DocumentChunker 
+from backend.rag_agent.source_loader import DocumentChunker 
 from backend.rag_agent.models import Conversation, Message
 from backend.rag_agent.pydantic_model import ChatRequest
 from backend.rag_agent.llm import generate_answer_stream
