@@ -1,3 +1,4 @@
+import time
 import uuid
 import json
 from fastapi import Depends, FastAPI, HTTPException, UploadFile, File, Form
@@ -31,17 +32,19 @@ app.add_middleware(
 )
 
 @app.post("/conversations")
-def create_conversation(
-    db: Annotated[Session, Depends(get_db)]
-):
-    conversation = Conversation(
-        title="新聊天",
-        user_id=1
-    )
+def create_conversation(db: Annotated[Session, Depends(get_db)]):
+    t0 = time.time()
 
+    conversation = Conversation(title="新聊天", user_id=1)
     db.add(conversation)
+
+    t1 = time.time()
     db.commit()
+    t2 = time.time()
     db.refresh(conversation)
+    t3 = time.time()
+
+    print(f"add: {t1-t0:.2f}s, commit: {t2-t1:.2f}s, refresh: {t3-t2:.2f}s, total: {t3-t0:.2f}s")
 
     return {
         "conversation_id": conversation.id,

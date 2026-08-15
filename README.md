@@ -25,15 +25,15 @@
 
 ## ✨ 核心特性
 
-| 模块 | 特性 |
-| ---- | ---- |
+| 模块              | 特性                                                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 📄 **多格式解析** | 支持 PDF / DOCX / TXT 文档，MP3 / WAV / M4A 等音频，MP4 / MOV / MKV 等视频，以及 YouTube / Bilibili 视频链接，音视频自动转写（FunASR SenseVoice）后入库 |
-| 🔍 **混合检索** | BM25 稀疏检索 + BGE-M3 稠密向量检索双路召回，RRF 结果融合，Cohere Cross-Encoder 重排序，兼顾关键词精确匹配与语义理解 |
-| 🧠 **双重记忆** | 会话内短期记忆（多轮对话上下文）+ 用户长期记忆（LLM 自动提取身份/偏好/目标，按用户隔离） |
-| ⚡ **流式对话** | 基于 FastAPI SSE 的流式输出，逐 token 渲染，回答附带 Top-K 知识来源引用 |
-| 🗄️ **数据存储** | PostgreSQL + pgvector 持久化用户、知识库、文档、Chunk、记忆数据，按用户/会话实现数据隔离 |
-| 📊 **RAG 评测** | 集成 LangSmith，支持 Correctness / Relevance / Groundedness / Retrieval Relevance 等评测指标 |
-| 🐳 **一键部署** | Backend + Frontend 双容器 Docker 化，HuggingFace 模型缓存，`docker compose up` 即可启动 |
+| 🔍 **混合检索**   | BM25 稀疏检索 + BGE-M3 稠密向量检索双路召回，RRF 结果融合，Cohere Cross-Encoder 重排序，兼顾关键词精确匹配与语义理解                                    |
+| 🧠 **双重记忆**   | 会话内短期记忆（多轮对话上下文）+ 用户长期记忆（LLM 自动提取身份/偏好/目标，按用户隔离）                                                                |
+| ⚡ **流式对话**   | 基于 FastAPI SSE 的流式输出，逐 token 渲染，回答附带 Top-K 知识来源引用                                                                                 |
+| 🗄️ **数据存储**   | PostgreSQL + pgvector 持久化用户、知识库、文档、Chunk、记忆数据，按用户/会话实现数据隔离                                                                |
+| 📊 **RAG 评测**   | 集成 LangSmith，支持 Correctness / Relevance / Groundedness / Retrieval Relevance 等评测指标                                                            |
+| 🐳 **一键部署**   | Backend + Frontend 双容器 Docker 化，HuggingFace 模型缓存，`docker compose up` 即可启动                                                                 |
 
 ---
 
@@ -41,12 +41,12 @@
 
 ### 1️⃣ 前置条件
 
-| 依赖 | 版本要求 |
-| ---- | ---- |
-| Python | ≥ 3.11 |
-| Node.js | ≥ 18 |
-| PostgreSQL | 13+（需启用 `pgvector` 扩展） |
-| Docker（可选） | 20.10+ |
+| 依赖           | 版本要求                      |
+| -------------- | ----------------------------- |
+| Python         | ≥ 3.11                        |
+| Node.js        | ≥ 18                          |
+| PostgreSQL     | 13+（需启用 `pgvector` 扩展） |
+| Docker（可选） | 20.10+                        |
 
 ### 2️⃣ 克隆项目
 
@@ -94,7 +94,7 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # 启动 FastAPI 服务
-uvicorn backend.rag_agent.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn backend.rag_agent.main:app --reload
 ```
 
 启动后访问 http://localhost:8000/docs 即可查看交互式 API 文档。
@@ -115,10 +115,10 @@ npm run dev
 docker compose up --build
 ```
 
-| 服务 | 容器端口 | 宿主机端口 | 说明 |
-| ---- | ------- | ---------- | ---- |
-| backend | 8080 | 8080 | FastAPI 后端（Nginx 通过容器网络代理） |
-| frontend | 80 | 5173 | Nginx 静态站点，访问 http://localhost:5173 |
+| 服务     | 容器端口 | 宿主机端口 | 说明                                       |
+| -------- | -------- | ---------- | ------------------------------------------ |
+| backend  | 8080     | 8080       | FastAPI 后端（Nginx 通过容器网络代理）     |
+| frontend | 80       | 5173       | Nginx 静态站点，访问 http://localhost:5173 |
 
 ---
 
@@ -243,35 +243,35 @@ rag_agent/
 
 ## 📦 支持的文档格式
 
-| 类别 | 格式 | 处理方式 |
-| ---- | ---- | -------- |
-| 📄 文档 | PDF、DOCX、TXT | 直接解析文本并切分 |
+| 类别    | 格式                          | 处理方式                      |
+| ------- | ----------------------------- | ----------------------------- |
+| 📄 文档 | PDF、DOCX、TXT                | 直接解析文本并切分            |
 | 🎵 音频 | MP3、WAV、M4A、FLAC、AAC、OGG | FFmpeg 转换 → SenseVoice 转写 |
-| 🎬 视频 | MP4、AVI、MOV、MKV、WEBM | 提取音轨 → 转写 |
-| 🔗 网页 | YouTube、Bilibili 视频链接 | yt-dlp 下载音频 → 转写 |
+| 🎬 视频 | MP4、AVI、MOV、MKV、WEBM      | 提取音轨 → 转写               |
+| 🔗 网页 | YouTube、Bilibili 视频链接    | yt-dlp 下载音频 → 转写        |
 
 > 文档切分采用 `RecursiveCharacterTextSplitter`（默认 chunk_size=200，overlap=20）。
 
 ## 🗄️ 数据模型
 
-| 表 | 说明 | 关键字段 |
-| ---- | ---- | -------- |
-| `users` | 用户（当前固定 user_id=1） | id |
-| `conversations` | 会话 | id、user_id、title、created_at |
-| `user_documents` | 用户上传的文档记录 | id、filename |
-| `documents` | 切分后的 Chunk（含向量） | id、doc_id、content、metadata、embedding(Vector 1024) |
-| `conversation_documents` | 会话与文档关联（数据隔离） | conversation_id、document_doc_id |
-| `messages` | 短期记忆（对话历史） | conversation_id、role、content、created_at |
-| `user_memories` | 长期记忆（用户偏好） | user_id、key、value、updated_at |
+| 表                       | 说明                       | 关键字段                                              |
+| ------------------------ | -------------------------- | ----------------------------------------------------- |
+| `users`                  | 用户（当前固定 user_id=1） | id                                                    |
+| `conversations`          | 会话                       | id、user_id、title、created_at                        |
+| `user_documents`         | 用户上传的文档记录         | id、filename                                          |
+| `documents`              | 切分后的 Chunk（含向量）   | id、doc_id、content、metadata、embedding(Vector 1024) |
+| `conversation_documents` | 会话与文档关联（数据隔离） | conversation_id、document_doc_id                      |
+| `messages`               | 短期记忆（对话历史）       | conversation_id、role、content、created_at            |
+| `user_memories`          | 长期记忆（用户偏好）       | user_id、key、value、updated_at                       |
 
 ## 🔌 API 参考
 
-| 方法 | 路径 | 说明 |
-| ---- | ---- | ---- |
-| `GET` | `/` | 健康检查，返回服务状态 |
-| `POST` | `/conversations` | 创建新会话，返回 `conversation_id` |
-| `POST` | `/chat` | 流式对话（JSON: `query`, `conversation_id`），返回 SSE 流 |
-| `POST` | `/conversations/{id}/sources` | 添加知识源（multipart 文件 或 `url` 表单字段） |
+| 方法   | 路径                          | 说明                                                      |
+| ------ | ----------------------------- | --------------------------------------------------------- |
+| `GET`  | `/`                           | 健康检查，返回服务状态                                    |
+| `POST` | `/conversations`              | 创建新会话，返回 `conversation_id`                        |
+| `POST` | `/chat`                       | 流式对话（JSON: `query`, `conversation_id`），返回 SSE 流 |
+| `POST` | `/conversations/{id}/sources` | 添加知识源（multipart 文件 或 `url` 表单字段）            |
 
 ### SSE 事件格式
 
@@ -309,16 +309,16 @@ data: {"type": "error", "message": "错误详情"}
 
 ## 🛠️ 技术栈
 
-| 层级 | 技术 |
-| ---- | ---- |
-| 后端框架 | Python · FastAPI · LangChain · LangGraph |
-| 检索 | BGE-M3（Embedding） · BM25s · RRF · Cohere Rerank |
-| 大模型 | 阿里云百炼 Qwen（OpenAI 兼容接口） · DashScope |
-| 音视频 | FunASR SenseVoice · FFmpeg · yt-dlp |
-| 数据存储 | PostgreSQL · pgvector · SQLAlchemy |
-| 前端 | React 18 · Vite 6 · TailwindCSS · SSE |
-| 评测 | LangSmith |
-| 部署 | Docker · Docker Compose · Nginx |
+| 层级     | 技术                                              |
+| -------- | ------------------------------------------------- |
+| 后端框架 | Python · FastAPI · LangChain · LangGraph          |
+| 检索     | BGE-M3（Embedding） · BM25s · RRF · Cohere Rerank |
+| 大模型   | 阿里云百炼 Qwen（OpenAI 兼容接口） · DashScope    |
+| 音视频   | FunASR SenseVoice · FFmpeg · yt-dlp               |
+| 数据存储 | PostgreSQL · pgvector · SQLAlchemy                |
+| 前端     | React 18 · Vite 6 · TailwindCSS · SSE             |
+| 评测     | LangSmith                                         |
+| 部署     | Docker · Docker Compose · Nginx                   |
 
 ---
 
