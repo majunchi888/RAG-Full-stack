@@ -85,6 +85,7 @@ def chat(
             Message.conversation_id == conversation_id
         )
         .order_by(Message.created_at)
+        .limit(4)
         .all()
     )
 
@@ -117,7 +118,7 @@ def chat(
 
     docs = retriever.search(
         query,
-        k=5
+        k=5,
     )
 
     context = "\n\n".join(
@@ -182,7 +183,7 @@ def chat(
         except Exception as e:
             db.rollback()
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
-            # 注意：这里 yield 后最好不要再操作 db
+
 
     return StreamingResponse(
         generate(),

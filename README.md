@@ -213,8 +213,7 @@ rag_agent/
 │   │   ├── database.py               # PostgreSQL + pgvector 数据访问
 │   │   ├── memory.py                 # 短期/长期记忆管理
 │   │   ├── models.py                 # SQLAlchemy 数据模型 & 向量维度定义
-│   │   ├── pydantic_model.py         # 请求/响应 Pydantic 模型
-│   │   └── tools.py                  # 工具函数
+│   │   └── pydantic_model.py         # 请求/响应 Pydantic 模型
 │   ├── Dockerfile.backend            # 后端容器镜像
 │   └── requirements.txt              # Python 依赖
 ├── frontend/

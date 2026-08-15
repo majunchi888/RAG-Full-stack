@@ -1,6 +1,6 @@
 from typing import Annotated, TypedDict
 from backend.rag_agent.retriever import HybridRetriever
-from backend.rag_agent.llm import generate_answer, llm
+from backend.rag_agent.llm import llm
 from backend.rag_agent.database import SessionLocal
 from langsmith import Client, traceable
 
@@ -11,6 +11,47 @@ from dotenv import load_dotenv
 load_dotenv()
 co = cohere.ClientV2(api_key=os.getenv("COHERE_API_KEY"))
 
+
+
+def generate_answer(
+    query: str,
+    context: str
+):
+
+    prompt = f"""
+              你是一个专业的知识库助手。
+              
+              请根据下面提供的资料回答问题。
+              如果资料中没有答案，请明确说不知道。
+              不要编造信息。
+              
+              资料：
+              {context}
+              
+              
+              问题：
+              {query}
+              
+              
+              回答：
+              """
+
+
+    response = client.chat.completions.create(
+        model="qwen3.7-plus",
+        messages=[
+            {
+                "role": "system",
+                "content": "你是一个严谨的RAG助手"
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0
+    )
+    return response.choices[0].message.content
 
 # ====================== 2. RAG 机器人 ======================
 @traceable
