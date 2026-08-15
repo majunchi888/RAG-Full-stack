@@ -231,7 +231,9 @@ npm run dev
 
 ## 5. Docker
 
-## docker compose up --build
+```
+docker compose up --build
+```
 
 ## 💡 Example
 
