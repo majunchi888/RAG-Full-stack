@@ -1,6 +1,6 @@
 const API_BASE = "/api"
-const UPLOAD_TIMEOUT = 300_000 // 5 分钟（大文档处理慢）
-const CHAT_TIMEOUT = 120_000 // 2 分钟
+const UPLOAD_TIMEOUT = 3000_000 // 5 分钟（大文档处理慢）
+const CHAT_TIMEOUT = 1200_000 // 2 分钟
 
 async function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController()
