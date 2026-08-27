@@ -31,11 +31,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.post("/conversations")
 def create_conversation(db: Annotated[Session, Depends(get_db)]):
     t0 = time.time()
 
-    conversation = Conversation(title="新聊天", user_id=1)
+    conversation = Conversation(title="新聊天", user_id=1)  # 实际应从认证中获取真实 user_id
     db.add(conversation)
 
     t1 = time.time()
@@ -51,104 +52,65 @@ def create_conversation(db: Annotated[Session, Depends(get_db)]):
         "title": conversation.title
     }
 
+
 @app.post("/chat")
 def chat(
-    # query: str,
-    # conversation_id: int,
     request: ChatRequest,
     db: Annotated[Session, Depends(get_db)]
 ):
     conversation_id = request.conversation_id
     query = request.query
 
-    # 用户 ID
+    # 1. 校验会话
     conversation = (
         db.query(Conversation)
-            .filter(
-                Conversation.id == conversation_id
-            )
-            .first()
-        )
-
+        .filter(Conversation.id == conversation_id)
+        .first()
+    )
     if conversation is None:
-        raise HTTPException(
-            status_code=404,
-            detail="聊天不存在"
-        )
+        raise HTTPException(status_code=404, detail="聊天不存在")
 
     user_id = conversation.user_id
-    
-    # 短期记忆
+
+    # 2. 短期记忆（最近4条）
     history = (
         db.query(Message)
-        .filter(
-            Message.conversation_id == conversation_id
-        )
+        .filter(Message.conversation_id == conversation_id)
         .order_by(Message.created_at)
         .limit(4)
         .all()
     )
 
-    messages = []
+    messages = [{"role": m.role, "content": m.content} for m in history]
+    messages.append({"role": "user", "content": query})
 
-    for message in history:
-        messages.append({
-            "role": message.role,
-            "content": message.content
-        })
-
-    messages.append({
-        "role": "user",
-        "content": query
-    })
-
-    # 长期记忆
-    memories = get_memories(
-    db,
-    user_id=user_id
-    )
-    
+    # 3. 长期记忆
+    memories = get_memories(db, user_id=user_id)
     memory_text = format_memories(memories)
-    
-    # 检索回答
-    retriever = HybridRetriever(
-        db=db,
-        conversation_id=conversation_id
-    )
 
-    docs = retriever.search(
-        query,
-        k=5,
-    )
+    # 4. 混合检索（已适配新模型）
+    retriever = HybridRetriever(db=db, conversation_id=conversation_id)
+    docs = retriever.search(query, k=5)
 
-    context = "\n\n".join(
-        [
-            doc["content"]
-            for doc in docs
-        ]
-    )
+    context = "\n\n".join([doc["content"] for doc in docs])
 
-    # 5. 保存聊天记录
-    # 用户消息
+    # 5. 先保存用户消息
     user_message = Message(
         conversation_id=conversation_id,
         role="user",
         content=query
     )
-
     db.add(user_message)
     db.commit()
 
-    # AI 消息
-    # SSE 流式响应
+    # 6. SSE 流式响应
     def generate():
         full_answer = ""
-        
         try:
-            # 1. 先发送 sources
+            # 发送 sources
             yield f"data: {json.dumps({'type': 'sources', 'sources': docs}, ensure_ascii=False)}\n\n"
-    
-            # 2. 流式生成答案
+
+            # 流式生成答案
             for chunk in generate_answer_stream(
                 query=query,
                 context=context,
@@ -157,33 +119,27 @@ def chat(
             ):
                 full_answer += chunk
                 yield f"data: {json.dumps({'type': 'token', 'content': chunk}, ensure_ascii=False)}\n\n"
-    
-    
-            # 4. 保存 AI 消息 + 更新记忆（放在 done 之后也可以）
+
+            # 保存 AI 消息
             assistant_message = Message(
                 conversation_id=conversation_id,
                 role="assistant",
                 content=full_answer
             )
             db.add(assistant_message)
-            
+
+            # 可选：提取并保存新记忆
             # new_memories = extract_memories(query, full_answer)
             # for memory in new_memories:
-            #     save_memory(
-            #         db=db,
-            #         user_id=user_id,
-            #         key=memory.key,
-            #         value=memory.value
-            #     )
-            
+            #     save_memory(db=db, user_id=user_id, key=memory.key, value=memory.value)
+
             db.commit()
-            # 3. 发送完成信号（先通知前端，再做耗时操作）
+
             yield f"data: {json.dumps({'type': 'done'})}\n\n"
 
         except Exception as e:
             db.rollback()
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)}, ensure_ascii=False)}\n\n"
-
 
     return StreamingResponse(
         generate(),
@@ -192,130 +148,67 @@ def chat(
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
         }
-    )        
-
-
-# @app.post("/conversations/{conversation_id}/upload")
-# async def upload_documents(
-#     conversation_id: int,
-#     db: Annotated[Session, Depends(get_db)],
-#     files: List[UploadFile] = File(..., description="上传文件"),
-# ):
-#     """上传文档到知识库"""
-
-#     conversation = (
-#         db.query(Conversation)
-#         .filter(Conversation.id == conversation_id)
-#         .first()
-#     )
-    
-#     if conversation is None:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="聊天不存在"
-#         )
-
-#     total_chunks = 0
-#     file_count = 0
-
-#     for file in files:
-#         doc_id = create_user_document(file.filename)
-#         temp_path = f"./temp_{uuid.uuid4()}_{file.filename}"
-#         try:
-#             # 写入临时磁盘
-#             with open(temp_path, "wb") as f:
-#                 f.write(await file.read())
-
-#             docs = load_file(temp_path) # 只传路径，不要传UploadFile对象
-
-#             splits = RecursiveCharacterTextSplitter(
-#                 chunk_size=500,
-#                 chunk_overlap=50
-#             ).split_documents(docs)
-
-#             insert_chunks(splits, doc_id, conversation_id)
-#             total_chunks += len(splits)
-#             file_count += 1
-#         finally:
-#             db.close()
-#             # 无论成功失败，清理临时文件
-#             if os.path.exists(temp_path):
-#                 os.unlink(temp_path)
-
-#     return {
-#         "message": f"成功上传 {file_count} 个文件，共 {total_chunks} 个chunks",
-#         "num_docs": file_count
-#     }
+    )
 
 
 @app.post("/conversations/{conversation_id}/sources")
 async def add_sources(
     conversation_id: int,
     db: Annotated[Session, Depends(get_db)],
-    files: list[UploadFile] | None = File(default=None),
+    files: List[UploadFile] | None = File(default=None),
     url: str | None = Form(default=None),
 ):
     """向会话知识库添加文件或 URL"""
 
     if not files and not url:
-        raise HTTPException(
-            status_code=400,
-            detail="请上传文件或提供 URL"
-        )
+        raise HTTPException(status_code=400, detail="请上传文件或提供 URL")
 
+    # 校验会话是否存在
     conversation = (
         db.query(Conversation)
         .filter(Conversation.id == conversation_id)
         .first()
     )
-
     if conversation is None:
-        raise HTTPException(
-            status_code=404,
-            detail="聊天不存在"
-        )
-
-    if not files and not url:
-        raise HTTPException(
-            status_code=400,
-            detail="请上传文件或提供 URL"
-        )
+        raise HTTPException(status_code=404, detail="聊天不存在")
 
     total_chunks = 0
     sources = []
 
     # -------------------------
-    # 文件
+    # 处理文件上传
     # -------------------------
-
     for file in files or []:
-
-        doc_id = create_user_document(
-            file.filename
+        # 1. 创建 UserDocument 记录
+        user_doc = create_user_document(
+            db=db,
+            filename=file.filename,
+            user_id=conversation.user_id   # 关联到会话所属用户
         )
 
-        temp_path = (
-            f"./temp_{uuid.uuid4()}_{file.filename}"
-        )
+        temp_path = f"./temp_{uuid.uuid4()}_{file.filename}"
 
         try:
+            # 保存临时文件
+            content = await file.read()
             with open(temp_path, "wb") as f:
-                f.write(await file.read())
+                f.write(content)
 
-            chunks = chunker.create_chunks(
-                temp_path
-            )
+            # 2. 分块
+            chunks = chunker.create_chunks(temp_path)
 
+            # 3. 插入 Document + 建立 ConversationDocument 关联
             insert_chunks(
-                chunks,
-                doc_id,
-                conversation_id
+                db=db,
+                chunks=chunks,
+                user_document_id=user_doc.id,
+                conversation_id=conversation_id
             )
 
             total_chunks += len(chunks)
 
             sources.append({
-                "doc_id": doc_id,
+                "user_document_id": user_doc.id,
                 "name": file.filename,
                 "type": "file",
                 "chunks": len(chunks),
@@ -326,41 +219,42 @@ async def add_sources(
                 os.unlink(temp_path)
 
     # -------------------------
-    # URL
+    # 处理 URL
     # -------------------------
-
     if url:
-
-        doc_id = create_user_document(url)
+        user_doc = create_user_document(
+            db=db,
+            filename=url,          # 用 URL 作为显示名称
+            user_id=conversation.user_id
+        )
 
         try:
-
             chunks = chunker.create_chunks(url)
 
             insert_chunks(
-                chunks,
-                doc_id,
-                conversation_id
+                db=db,
+                chunks=chunks,
+                user_document_id=user_doc.id,
+                conversation_id=conversation_id
             )
 
             total_chunks += len(chunks)
 
             sources.append({
-                "doc_id": doc_id,
+                "user_document_id": user_doc.id,
                 "name": url,
                 "type": "url",
                 "chunks": len(chunks),
             })
 
         except Exception as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"URL处理失败: {str(e)}"
-            )
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"URL处理失败: {str(e)}")
 
     return {
         "message": "知识源添加成功",
         "total_chunks": total_chunks,
+        "sources": sources
     }
 
 @app.get("/")

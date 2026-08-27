@@ -23,7 +23,7 @@
 
 ## 📖 项目简介
 
-本项目是一个端到端的 **RAG（检索增强生成）** 智能知识库问答系统。用户上传文档、音频/视频或网页链接后，系统自动完成解析、切分与向量化，并通过 **混合检索（BM25 + Dense）+ RRF 融合 + Cross-Encoder Rerank** 的多阶段链路，为用户的提问提供**带有来源引用**的流式回答。
+本项目是一个端到端的 **RAG（检索增强生成）** 智能知识库问答系统。用户上传文档、音频/视频或网页链接后，系统自动完成解析、切分与向量化，并通过 **混合检索（BM25 + Dense）+ RRF 融合 + Cross-Encoder Rerank** 的多阶段链路，为用户的提问提供流式回答。
 
 同时内置**短期对话记忆**与**用户长期记忆**机制，让 AI 能够在多轮对话中记住上下文与用户偏好，实现更自然、连续的个性化问答体验。
 
@@ -34,7 +34,7 @@
 | 📄 **多格式解析** | 支持 PDF / DOCX / TXT 文档，MP3 / WAV / M4A 等音频，MP4 / MOV / MKV 等视频，以及 YouTube / Bilibili 视频链接，音视频自动转写（FunASR SenseVoice）后入库 |
 | 🔍 **混合检索**   | BM25 稀疏检索 + BGE-M3 稠密向量检索双路召回，RRF 结果融合，Cohere Cross-Encoder 重排序，兼顾关键词精确匹配与语义理解                                    |
 | 🧠 **双重记忆**   | 会话内短期记忆（多轮对话上下文）+ 用户长期记忆（LLM 自动提取身份/偏好/目标，按用户隔离）                                                                |
-| ⚡ **流式对话**   | 基于 FastAPI SSE 的流式输出，逐 token 渲染，回答附带 Top-K 知识来源引用                                                                                 |
+| ⚡ **流式对话**   | 基于 FastAPI SSE 的流式输出，逐 token 渲染                                                                                                              |
 | 🗄️ **数据存储**   | PostgreSQL + pgvector 持久化用户、知识库、文档、Chunk、记忆数据，按用户/会话实现数据隔离                                                                |
 | 📊 **RAG 评测**   | 集成 LangSmith，支持 Correctness / Relevance / Groundedness / Retrieval Relevance 等评测指标                                                            |
 | 🐳 **一键部署**   | Backend + Frontend 双容器 Docker 化，HuggingFace 模型缓存，`docker compose up` 即可启动                                                                 |
@@ -162,7 +162,7 @@ docker compose up --build
                               └─────────────────────┘
                                           │
                                           ↓
-                                  Answer + Sources
+                                        Answer
 ```
 
 ## 🔍 RAG 检索链路

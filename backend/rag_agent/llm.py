@@ -9,7 +9,7 @@ load_dotenv()
 llm = ChatOpenAI(
     api_key=os.getenv("ALIYUN_API_KEY"),
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    model_name="qwen3.7-flash",
+    model_name="qwen3.7-",
     temperature=0.2
 )
 
