@@ -260,12 +260,20 @@ rag_agent/
 | 表                       | 说明                       | 关键字段                                              |
 | ------------------------ | -------------------------- | ----------------------------------------------------- |
 | `users`                  | 用户（当前固定 user_id=1） | id                                                    |
-| `conversations`          | 会话                       | id、user_id、title、created_at                        |
-| `user_documents`         | 用户上传的文档记录         | id、filename                                          |
+| `conversations`          | 会话                       | id、user_id、title、created_at、updated_at            |
+| `user_documents`         | 用户上传的文档记录         | id、user_id、filename、file_path、file_size           |
 | `documents`              | 切分后的 Chunk（含向量）   | id、doc_id、content、metadata、embedding(Vector 1024) |
 | `conversation_documents` | 会话与文档关联（数据隔离） | conversation_id、document_doc_id                      |
 | `messages`               | 短期记忆（对话历史）       | conversation_id、role、content、created_at            |
-| `user_memories`          | 长期记忆（用户偏好）       | user_id、key、value、updated_at                       |
+| `user_memories`          | 长期记忆（用户偏好）       | user_id、key、value、created_at、updated_at           |
+
+---
+
+一个 UserDocument（逻辑文档）对应多个 Document（切片）
+一个 Conversation 通过 conversation_documents 关联多个 UserDocument
+检索时：会话 → 找到关联的 user_document_id → 再找到对应的所有 chunks
+
+---
 
 ## 🔌 API 参考
 
