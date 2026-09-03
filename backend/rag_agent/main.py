@@ -18,7 +18,7 @@ from backend.rag_agent.memory import extract_memories, format_memories, get_memo
 
 chunker = DocumentChunker()
 
-app = FastAPI(title="Agentic RAG - Chroma + 阿里云百炼")
+app = FastAPI(title="Agentic RAG - postgresql + 阿里云百炼")
 
 app.openapi_version = "3.0.3"
 
@@ -129,9 +129,9 @@ def chat(
             db.add(assistant_message)
 
             # 可选：提取并保存新记忆
-            # new_memories = extract_memories(query, full_answer)
-            # for memory in new_memories:
-            #     save_memory(db=db, user_id=user_id, key=memory.key, value=memory.value)
+            new_memories = extract_memories(query, full_answer)
+            for memory in new_memories:
+                save_memory(db=db, user_id=user_id, key=memory.key, value=memory.value)
 
             db.commit()
 

@@ -9,7 +9,7 @@ load_dotenv()
 llm = ChatOpenAI(
     api_key=os.getenv("ALIYUN_API_KEY"),
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    model_name="qwen3.7-",
+    model_name="qwen3.8-flash",
     temperature=0.2
 )
 
@@ -51,7 +51,7 @@ def generate_answer_stream(
 
 
     response = client.chat.completions.create(
-        model="qwen3.7-plus",
+        model="qwen3.8-flash",
         messages=[
             {
                 "role": "system",
